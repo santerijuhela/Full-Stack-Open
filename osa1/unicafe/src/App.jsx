@@ -6,17 +6,22 @@ const Button = ({ onClick, text }) => (
   </button>
 )
 
-const Statistics = ({ good, neutral, bad, all, avg, pos }) => (
-  <div>
-    <h1>statistics</h1>
-    <p>good {good}</p>
-    <p>neutral {neutral}</p>
-    <p>bad {bad}</p>
-    <p>all {all}</p>
-    <p>average {avg}</p>
-    <p>positive {pos} %</p>
-  </div>
-)
+const Statistics = ({ good, neutral, bad, all, avg, pos }) => {
+  if (all === 0) {
+    return <p>No feedback given</p>
+  }
+  return (
+    <div>
+      <h1>statistics</h1>
+      <p>good {good}</p>
+      <p>neutral {neutral}</p>
+      <p>bad {bad}</p>
+      <p>all {all}</p>
+      <p>average {avg}</p>
+      <p>positive {pos} %</p>
+    </div>
+  )
+}
 
 const App = () => {
   // tallenna napit omaan tilaansa
