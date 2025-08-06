@@ -6,7 +6,7 @@ const Persons = ({ persons, filterStr }) => (
             .filter(person =>
                 person.name.toLowerCase().includes(filterStr.toLowerCase()))
             .map(person =>
-                <Person key={person.name} person={person} />)
+                <Person key={person.id} person={person} />)
         }
     </ul>
 )
