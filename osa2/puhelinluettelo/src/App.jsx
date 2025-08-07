@@ -32,18 +32,25 @@ const App = () => {
 
   const addPerson = (event) => {
     event.preventDefault()
-
-    if (persons.find(person => person.name.toLowerCase() === newName.toLowerCase())) {
-      window.alert(`${newName} is already added to phonebook`)
+    const personObject = {
+        name: newName,
+        number: newNumber
+      }
+    
+    const existingPerson = persons.find(person => person.name.toLowerCase() === newName.toLowerCase())
+    if (existingPerson) {
+      if (window.confirm(`${existingPerson.name} is already added to phonebook, replace the old number with a new one?`)) {
+        personService
+        .update(existingPerson.id, personObject)
+        .then(returnedPerson => {
+          setPersons(persons.map(person => person.id !== existingPerson.id ? person : returnedPerson))
+        })
+      }
     }
     else if (persons.find(person => person.number === newNumber)) {
       window.alert(`${newNumber} is already added to phonebook`)
     }
     else {
-      const personObject = {
-        name: newName,
-        number: newNumber
-      }
       personService
         .create(personObject)
         .then(returnedPerson => {
