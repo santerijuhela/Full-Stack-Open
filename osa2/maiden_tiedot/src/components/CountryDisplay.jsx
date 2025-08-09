@@ -1,11 +1,16 @@
 import Country from "./Country"
 
-const CountryDisplay = ({ filterTxt, countries }) => {
+const CountryDisplay = ({ filterTxt, countries, handleShowButton, selectedCountry }) => {
     const filteredCountries = countries.filter(country =>
         country.name.common.toLowerCase().includes(filterTxt.toLowerCase())
     )
-    
-    if (filteredCountries.length < 1) {
+
+    if (selectedCountry) {
+        return (
+            <Country country={selectedCountry} />
+        )
+    }
+    else if (filteredCountries.length < 1) {
         return null
     }
     else if (filteredCountries.length === 1) {
@@ -19,7 +24,8 @@ const CountryDisplay = ({ filterTxt, countries }) => {
                 <ul>
                     {filteredCountries.map(country =>
                         <li key={country.ccn3}>
-                            {country.name.common}
+                            {country.name.common} {' '}
+                            <button onClick={() => handleShowButton(country)}>Show</button>
                         </li>
                     )}
                 </ul>

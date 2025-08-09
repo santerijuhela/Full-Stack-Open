@@ -6,6 +6,7 @@ import CountryDisplay from './components/CountryDisplay'
 const App = () => {
   const [countries, setCountries] = useState([])
   const [filterTxt, setFilterTxt] = useState('')
+  const [selectedCountry, setSelectedCountry] = useState(null)
 
   useEffect(() => {
     countryService
@@ -17,6 +18,11 @@ const App = () => {
 
   const handleFilterChange = (event) => {
     setFilterTxt(event.target.value)
+    setSelectedCountry(null)
+  }
+
+  const handleShowButton = country => {
+    setSelectedCountry(country)
   }
 
   return (
@@ -28,6 +34,8 @@ const App = () => {
       <CountryDisplay
         filterTxt={filterTxt}
         countries={countries}
+        handleShowButton={handleShowButton}
+        selectedCountry={selectedCountry}
       />
     </div>
   )
