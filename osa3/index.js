@@ -3,7 +3,30 @@ const app = express()
 const morgan = require('morgan')
 
 app.use(express.json())
-app.use(morgan('tiny'))
+
+morgan.token('data', (request) => {
+    return JSON.stringify(request.body)
+})
+
+/* app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data')) */
+
+/* Only have the data of the request in POST requests */
+app.use(morgan((tokens, req, res) => {
+    const normal =
+        [
+            tokens.method(req, res),
+            tokens.url(req, res),
+            tokens.status(req, res),
+            tokens.res(req, res, 'content-length'), '-',
+            tokens['response-time'](req, res), 'ms'
+        ].join(' ')
+    
+        if(req.method === 'POST') {
+            return `${normal} ${tokens.data(req, res)}`
+        } else {
+            return normal
+        }
+}))
 
 let persons = [
     {
