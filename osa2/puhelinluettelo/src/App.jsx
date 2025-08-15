@@ -84,9 +84,9 @@ const App = () => {
     const personToDelete = persons.find(person => person.id === id)
     if (window.confirm(`Delete ${personToDelete.name}?`)) {
       personService.remove(id)
-      .then(deletedPerson => {
+      .then(() => {
         setPersons(persons.filter(person => person.id !== id))
-        setNotification(`Deleted ${deletedPerson.name}`)
+        setNotification(`Deleted ${personToDelete.name}`)
         setTimeout(() => {
           setNotification(null)
         }, 5000);
