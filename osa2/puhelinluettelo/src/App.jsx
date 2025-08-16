@@ -74,6 +74,12 @@ const App = () => {
             setNotification(null)
           }, 5000);
         })
+        .catch(e => {
+          setErrorMsg(JSON.stringify(e.response.data))
+          setTimeout(() => {
+            setErrorMsg(null)
+          }, 5000);
+        })
     }
 
     setNewName('')
