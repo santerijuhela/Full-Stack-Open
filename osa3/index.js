@@ -4,13 +4,25 @@ const app = express()
 const morgan = require('morgan')
 const Person = require('./models/person')
 
-app.use(express.json())
-app.use(express.static('dist'))
-
 morgan.token('data', (request) => {
     return JSON.stringify(request.body)
 })
 
+const errorHandler = (error, request, response, next) => {
+    console.log(error.message)
+
+    if (error.name === 'CastError') {
+        return response.status(400).send({ error: 'malformatted id' })
+    }
+    next(error)
+}
+
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' })
+}
+
+app.use(express.static('dist'))
+app.use(express.json())
 /* app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data')) */
 
 /* Only have the data of the request in POST requests */
@@ -116,6 +128,9 @@ app.post('/api/persons', (request, response) => {
         response.json(savedPerson)
     })
 })
+
+app.use(unknownEndpoint)
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
