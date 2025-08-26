@@ -14,6 +14,7 @@ describe('most blogs', () => {
             author: 'Edsger W. Dijkstra',
             blogs: 1
         }
+        assert.deepStrictEqual(result, expected)
     })
     
     test('when list has several blogs equals the correct author and nunber of blogs', () => {
