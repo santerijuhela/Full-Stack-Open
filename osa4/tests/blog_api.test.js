@@ -33,6 +33,14 @@ test('a blog with a specific title is among the returned blogs', async () => {
   assert(titles.includes('React patterns'))
 })
 
+test('returned blogs have the field id', async () => {
+  const response = await api.get('/api/blogs')
+
+  response.body.forEach(blog => {
+    assert(Object.hasOwn(blog, 'id'))
+  })
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
