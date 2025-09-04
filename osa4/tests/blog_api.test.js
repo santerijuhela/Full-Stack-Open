@@ -80,6 +80,38 @@ test('a blog with no likes set has likes set to zero', async () => {
   assert.strictEqual(addedBlog.likes, 0)
 })
 
+test('a blog with no title is not added', async () => {
+  const newBlog = {
+    author: 'Robert C. Martin',
+    url: 'http://blog.cleancoder.com/uncle-bob/2025/09/04/NoTitle.html',
+    likes: 2
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(400)
+
+  const blogsAtEnd = await blogsInDb()
+  assert.strictEqual(blogsAtEnd.length, blogs.length)
+})
+
+test('a blog with no url is not added', async () => {
+  const newBlog = {
+    title: 'Testing no url',
+    author: 'Robert C. Martin',
+    likes: 3
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(400)
+
+  const blogsAtEnd = await blogsInDb()
+  assert.strictEqual(blogsAtEnd.length, blogs.length)
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
