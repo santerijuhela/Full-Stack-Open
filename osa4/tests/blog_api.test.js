@@ -62,6 +62,24 @@ test('a valid blog can be added', async () => {
   assert(titles.includes('Test adding blog'))
 })
 
+test('a blog with no likes set has likes set to zero', async () => {
+  const newBlog = {
+    title: 'Testing no likes',
+    author: 'Robert C. Martin',
+    url: 'http://blog.cleancoder.com/uncle-bob/2025/09/04/NoLikes.html'
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+
+  const blogsAtEnd = await blogsInDb()
+  const addedBlog = blogsAtEnd.find(blog => blog.title === 'Testing no likes')
+  assert.strictEqual(addedBlog.likes, 0)
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
