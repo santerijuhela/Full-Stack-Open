@@ -21,7 +21,7 @@ describe('when there are initially some blogs saved', () => {
       .expect('Content-Type', /application\/json/)
   })
 
-  test('correct number of notes is returned', async () => {
+  test('correct number of blogs is returned', async () => {
     const response = await api.get('/api/blogs')
 
     assert.strictEqual(response.body.length, blogs.length)
@@ -167,6 +167,77 @@ describe('when there are initially some blogs saved', () => {
 
       await api.delete(`/api/blogs/${invalidID}`)
         .expect(400)
+
+      const blogsAtEnd = await blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, blogs.length)
+    })
+  })
+
+  describe('updating a blog', () => {
+    test('succeeds with valid data', async () => {
+      const blogsAtStart = await blogsInDb()
+      const blogToUpdate = blogsAtStart[0]
+
+      const newData = {
+        title: blogToUpdate.title,
+        author: blogToUpdate.author,
+        url: blogToUpdate.url,
+        likes: 30
+      }
+
+      const updatedBlog = await api
+        .put(`/api/blogs/${blogToUpdate.id}`)
+        .send(newData)
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+
+      const expectedBlog = {
+        ...blogToUpdate,
+        likes: 30
+      }
+      const blogsAtEnd = await blogsInDb()
+
+      assert.deepStrictEqual(updatedBlog.body, expectedBlog)
+      assert.strictEqual(blogsAtEnd.length, blogs.length)
+    })
+
+    test('fails with status code 400 if id is invalid', async () => {
+      const invalidID = '6a3d5da59270081a42a3445'
+      const blogsAtStart = await blogsInDb()
+      const blogToUpdate = blogsAtStart[0]
+
+      const newData = {
+        title: blogToUpdate.title,
+        author: blogToUpdate.author,
+        url: blogToUpdate.url,
+        likes: 30
+      }
+
+      await api
+        .put(`/api/blogs/${invalidID}`)
+        .send(newData)
+        .expect(400)
+
+      const blogsAtEnd = await blogsInDb()
+      const unchangedBlog = blogsAtEnd[0]
+
+      assert.deepStrictEqual(unchangedBlog, blogToUpdate)
+      assert.strictEqual(blogsAtEnd.length, blogs.length)
+    })
+
+    test('fails with status code 404 if blog does not exist', async () => {
+      const blogsAtStart = await blogsInDb()
+      const validNonexistingId = await nonExistingId()
+
+      const newData = {
+        ...blogsAtStart[0],
+        likes: 30
+      }
+
+      await api
+        .put(`/api/blogs/${validNonexistingId}`)
+        .send(newData)
+        .expect(404)
 
       const blogsAtEnd = await blogsInDb()
       assert.strictEqual(blogsAtEnd.length, blogs.length)
