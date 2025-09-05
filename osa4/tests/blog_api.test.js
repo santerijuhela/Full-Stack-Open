@@ -3,7 +3,7 @@ const { test, after, beforeEach, describe } = require('node:test')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
-const { blogs, blogsInDb } = require('./test_helper')
+const { blogs, blogsInDb, nonExistingId } = require('./test_helper')
 const Blog = require('../models/blog')
 
 const api = supertest(app)
@@ -40,6 +40,37 @@ describe('when there are initially some blogs saved', () => {
     response.body.forEach(blog => {
       assert(Object.hasOwn(blog, 'id'))
     })
+  })
+
+  describe('viewing a specific blog', () => {
+    test('succeeds with a valid id', async () => {
+      const blogsAtStart = await blogsInDb()
+      const blogToView = blogsAtStart[0]
+
+      const viewedBlog = await api
+        .get(`/api/blogs/${blogToView.id}`)
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+
+      assert.deepStrictEqual(viewedBlog.body, blogToView)
+    })
+
+    test('fails with status code 400 if id is invalid', async () => {
+      const invalidID = '6a3d5da59270081a42a3445'
+
+      await api
+        .get(`/api/blogs/${invalidID}`)
+        .expect(400)
+    })
+
+    test('fails with status code 404 if blog does not exist', async () => {
+      const validNonexistingId = await nonExistingId()
+
+      await api
+        .get(`/api/blogs/${validNonexistingId}`)
+        .expect(404)
+    })
+
   })
 
   describe('addition of a new blog', () => {
