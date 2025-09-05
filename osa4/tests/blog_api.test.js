@@ -1,10 +1,12 @@
 const assert = require('node:assert')
+const bcrypt = require('bcrypt')
 const { test, after, beforeEach, describe } = require('node:test')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
-const { blogs, blogsInDb, nonExistingId } = require('./test_helper')
+const { blogs, blogsInDb, nonExistingId, usersInDb } = require('./test_helper')
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
 const api = supertest(app)
 
@@ -242,6 +244,39 @@ describe('when there are initially some blogs saved', () => {
       const blogsAtEnd = await blogsInDb()
       assert.strictEqual(blogsAtEnd.length, blogs.length)
     })
+  })
+})
+
+describe('when there is initially one user in db', () => {
+  beforeEach(async () => {
+    await User.deleteMany({})
+
+    const passwordHash = await bcrypt.hash('whatever', 10)
+    const user = new User({ username: 'root', passwordHash })
+
+    await user.save()
+  })
+
+  test('creation succeeds with a fresh username', async () => {
+    const usersAtStart = await usersInDb()
+
+    const newUser = {
+      username: 'annadm',
+      name: 'Anne Administrator',
+      password: 'topsecret'
+    }
+
+    await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const usersAtEnd = await usersInDb()
+    assert.strictEqual(usersAtEnd.length, usersAtStart.length + 1)
+
+    const usernames = usersAtEnd.map(user => user.username)
+    assert(usernames.includes(newUser.username))
   })
 })
 
