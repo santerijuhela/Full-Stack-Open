@@ -9,7 +9,7 @@ const blogsRouter = require('./controllers/blogs')
 const app = express()
 
 morgan.token('body', (request) => {
-    return JSON.stringify(request.body)
+  return JSON.stringify(request.body)
 })
 
 logger.info('connecting to', config.MONGODB_URI)
