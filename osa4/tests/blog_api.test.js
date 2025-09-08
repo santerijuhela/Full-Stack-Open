@@ -278,6 +278,104 @@ describe('when there is initially one user in db', () => {
     const usernames = usersAtEnd.map(user => user.username)
     assert(usernames.includes(newUser.username))
   })
+
+  test('creation fails with status code 400 and proper message if username already exists', async () => {
+    const usersAtStart = await usersInDb()
+
+    const newUser = {
+      username: 'root',
+      name: 'Duplicate User',
+      password: 'duplicate'
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    const usersAtEnd = await usersInDb()
+    assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+    assert(result.body.error.includes('expected `username` to be unique'))
+  })
+
+  test('creation fails with status code 400 and proper message if username missing', async () => {
+    const usersAtStart = await usersInDb()
+
+    const newUser = {
+      name: 'No Username',
+      password: 'nameless'
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    const usersAtEnd = await usersInDb()
+    assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+    assert(result.body.error.includes('`username` is required'))
+  })
+
+  test('creation fails with status code 400 and proper message if username too short', async () => {
+    const usersAtStart = await usersInDb()
+
+    const newUser = {
+      username: 'Ab',
+      name: 'Short Username',
+      password: 'tooshort'
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    const usersAtEnd = await usersInDb()
+    assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+    assert(result.body.error.includes(`\`username\` (\`${newUser.username}\`) is shorter than the minimum allowed length`))
+  })
+
+  test('creation fails with status code 400 and proper message if password missing', async () => {
+    const usersAtStart = await usersInDb()
+
+    const newUser = {
+      username: 'passwordless',
+      name: 'No Password'
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    const usersAtEnd = await usersInDb()
+    assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+    assert(result.body.error.includes('invalid password'))
+  })
+
+  test('creation fails with status code 400 and proper message if password too short', async () => {
+    const usersAtStart = await usersInDb()
+
+    const newUser = {
+      username: 'shortpassword',
+      name: 'Shortie Passerson',
+      password: 'sp'
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    const usersAtEnd = await usersInDb()
+    assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+    assert(result.body.error.includes('invalid password'))
+  })
 })
 
 after(async () => {
