@@ -11,9 +11,28 @@ const User = require('../models/user')
 const api = supertest(app)
 
 describe('when there are initially some blogs saved', () => {
+  let token
+
   beforeEach(async () => {
     await Blog.deleteMany({})
-    await Blog.insertMany(blogs)
+    await User.deleteMany({})
+
+    const username = 'root'
+    const password = 'whatever'
+    const passwordHash = await bcrypt.hash(password, 10)
+    const user = new User({ username, name: 'root', passwordHash })
+
+    await user.save()
+
+    const loginResponse = await api
+      .post('/api/login')
+      .send({ username, password })
+
+    token = loginResponse.body.token
+
+    const userId = user._id
+    const userBlogs = blogs.map(blog => ({ ...blog, user: userId }))
+    await Blog.insertMany(userBlogs)
   })
 
   test('blogs are returned as json', async () => {
@@ -54,6 +73,8 @@ describe('when there are initially some blogs saved', () => {
         .expect(200)
         .expect('Content-Type', /application\/json/)
 
+      blogToView.user = blogToView.user.toString()
+
       assert.deepStrictEqual(viewedBlog.body, blogToView)
     })
 
@@ -86,6 +107,7 @@ describe('when there are initially some blogs saved', () => {
 
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlog)
         .expect(201)
         .expect('Content-Type', /application\/json/)
@@ -106,6 +128,7 @@ describe('when there are initially some blogs saved', () => {
 
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlog)
         .expect(201)
         .expect('Content-Type', /application\/json/)
@@ -124,6 +147,7 @@ describe('when there are initially some blogs saved', () => {
 
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlog)
         .expect(400)
 
@@ -140,11 +164,29 @@ describe('when there are initially some blogs saved', () => {
 
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlog)
         .expect(400)
 
       const blogsAtEnd = await blogsInDb()
       assert.strictEqual(blogsAtEnd.length, blogs.length)
+    })
+
+    test('fails with status code 401 and proper message if no token', async () => {
+      const newBlog = {
+        title : 'Testing no token',
+        author: 'Robert C. Martin',
+        likes: 8
+      }
+
+      const result = await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(401)
+
+      const blogsAtEnd = await blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, blogs.length)
+      assert(result.body.error.includes('token missing or invalid'))
     })
   })
 
@@ -155,6 +197,7 @@ describe('when there are initially some blogs saved', () => {
 
       await api
         .delete(`/api/blogs/${blogToDelete.id}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(204)
 
       const blogsAtEnd = await blogsInDb()
@@ -167,7 +210,9 @@ describe('when there are initially some blogs saved', () => {
     test('fails with status code 400 if id is invalid', async () => {
       const invalidID = '6a3d5da59270081a42a3445'
 
-      await api.delete(`/api/blogs/${invalidID}`)
+      await api
+        .delete(`/api/blogs/${invalidID}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(400)
 
       const blogsAtEnd = await blogsInDb()
@@ -195,6 +240,7 @@ describe('when there are initially some blogs saved', () => {
 
       const expectedBlog = {
         ...blogToUpdate,
+        user: blogToUpdate.user.toString(),
         likes: 30
       }
       const blogsAtEnd = await blogsInDb()
@@ -257,124 +303,126 @@ describe('when there is initially one user in db', () => {
     await user.save()
   })
 
-  test('creation succeeds with a fresh username', async () => {
-    const usersAtStart = await usersInDb()
+  describe('creation of a new user', () => {
+    test('succeeds with a fresh username', async () => {
+      const usersAtStart = await usersInDb()
 
-    const newUser = {
-      username: 'annadm',
-      name: 'Anne Administrator',
-      password: 'topsecret'
-    }
+      const newUser = {
+        username: 'annadm',
+        name: 'Anne Administrator',
+        password: 'topsecret'
+      }
 
-    await api
-      .post('/api/users')
-      .send(newUser)
-      .expect(201)
-      .expect('Content-Type', /application\/json/)
+      await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
 
-    const usersAtEnd = await usersInDb()
-    assert.strictEqual(usersAtEnd.length, usersAtStart.length + 1)
+      const usersAtEnd = await usersInDb()
+      assert.strictEqual(usersAtEnd.length, usersAtStart.length + 1)
 
-    const usernames = usersAtEnd.map(user => user.username)
-    assert(usernames.includes(newUser.username))
-  })
+      const usernames = usersAtEnd.map(user => user.username)
+      assert(usernames.includes(newUser.username))
+    })
 
-  test('creation fails with status code 400 and proper message if username already exists', async () => {
-    const usersAtStart = await usersInDb()
+    test('fails with status code 400 and proper message if username already exists', async () => {
+      const usersAtStart = await usersInDb()
 
-    const newUser = {
-      username: 'root',
-      name: 'Duplicate User',
-      password: 'duplicate'
-    }
+      const newUser = {
+        username: 'root',
+        name: 'Duplicate User',
+        password: 'duplicate'
+      }
 
-    const result = await api
-      .post('/api/users')
-      .send(newUser)
-      .expect(400)
-      .expect('Content-Type', /application\/json/)
+      const result = await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
 
-    const usersAtEnd = await usersInDb()
-    assert.strictEqual(usersAtEnd.length, usersAtStart.length)
-    assert(result.body.error.includes('expected `username` to be unique'))
-  })
+      const usersAtEnd = await usersInDb()
+      assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+      assert(result.body.error.includes('expected `username` to be unique'))
+    })
 
-  test('creation fails with status code 400 and proper message if username missing', async () => {
-    const usersAtStart = await usersInDb()
+    test('fails with status code 400 and proper message if username missing', async () => {
+      const usersAtStart = await usersInDb()
 
-    const newUser = {
-      name: 'No Username',
-      password: 'nameless'
-    }
+      const newUser = {
+        name: 'No Username',
+        password: 'nameless'
+      }
 
-    const result = await api
-      .post('/api/users')
-      .send(newUser)
-      .expect(400)
-      .expect('Content-Type', /application\/json/)
+      const result = await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
 
-    const usersAtEnd = await usersInDb()
-    assert.strictEqual(usersAtEnd.length, usersAtStart.length)
-    assert(result.body.error.includes('`username` is required'))
-  })
+      const usersAtEnd = await usersInDb()
+      assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+      assert(result.body.error.includes('`username` is required'))
+    })
 
-  test('creation fails with status code 400 and proper message if username too short', async () => {
-    const usersAtStart = await usersInDb()
+    test('fails with status code 400 and proper message if username too short', async () => {
+      const usersAtStart = await usersInDb()
 
-    const newUser = {
-      username: 'Ab',
-      name: 'Short Username',
-      password: 'tooshort'
-    }
+      const newUser = {
+        username: 'Ab',
+        name: 'Short Username',
+        password: 'tooshort'
+      }
 
-    const result = await api
-      .post('/api/users')
-      .send(newUser)
-      .expect(400)
-      .expect('Content-Type', /application\/json/)
+      const result = await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
 
-    const usersAtEnd = await usersInDb()
-    assert.strictEqual(usersAtEnd.length, usersAtStart.length)
-    assert(result.body.error.includes(`\`username\` (\`${newUser.username}\`) is shorter than the minimum allowed length`))
-  })
+      const usersAtEnd = await usersInDb()
+      assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+      assert(result.body.error.includes(`\`username\` (\`${newUser.username}\`) is shorter than the minimum allowed length`))
+    })
 
-  test('creation fails with status code 400 and proper message if password missing', async () => {
-    const usersAtStart = await usersInDb()
+    test('fails with status code 400 and proper message if password missing', async () => {
+      const usersAtStart = await usersInDb()
 
-    const newUser = {
-      username: 'passwordless',
-      name: 'No Password'
-    }
+      const newUser = {
+        username: 'passwordless',
+        name: 'No Password'
+      }
 
-    const result = await api
-      .post('/api/users')
-      .send(newUser)
-      .expect(400)
-      .expect('Content-Type', /application\/json/)
+      const result = await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
 
-    const usersAtEnd = await usersInDb()
-    assert.strictEqual(usersAtEnd.length, usersAtStart.length)
-    assert(result.body.error.includes('invalid password'))
-  })
+      const usersAtEnd = await usersInDb()
+      assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+      assert(result.body.error.includes('invalid password'))
+    })
 
-  test('creation fails with status code 400 and proper message if password too short', async () => {
-    const usersAtStart = await usersInDb()
+    test('fails with status code 400 and proper message if password too short', async () => {
+      const usersAtStart = await usersInDb()
 
-    const newUser = {
-      username: 'shortpassword',
-      name: 'Shortie Passerson',
-      password: 'sp'
-    }
+      const newUser = {
+        username: 'shortpassword',
+        name: 'Shortie Passerson',
+        password: 'sp'
+      }
 
-    const result = await api
-      .post('/api/users')
-      .send(newUser)
-      .expect(400)
-      .expect('Content-Type', /application\/json/)
+      const result = await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
 
-    const usersAtEnd = await usersInDb()
-    assert.strictEqual(usersAtEnd.length, usersAtStart.length)
-    assert(result.body.error.includes('invalid password'))
+      const usersAtEnd = await usersInDb()
+      assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+      assert(result.body.error.includes('invalid password'))
+    })
   })
 })
 
