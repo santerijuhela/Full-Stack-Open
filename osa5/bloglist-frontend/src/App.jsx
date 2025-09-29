@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import BlogForm from './components/BlogForm'
 import Notification from './components/Notification'
+import Togglable from './components/Togglable'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
@@ -41,7 +42,6 @@ const App = () => {
       setUsername('')
       setPassword('')
     } catch {
-      console.log('Catch')
       showNotification('Wrong credentials', true)
     }
   }
@@ -54,20 +54,20 @@ const App = () => {
   }
 
   const createBlog = async newBlog => {
+    blogFormRef.current.toggleVisibility()
     const returnedBlog = await blogService.create(newBlog)
     setBlogs(blogs.concat(returnedBlog))
     showNotification(`a new blog ${returnedBlog.title} by ${returnedBlog.author} added`)
   }
 
   const showNotification = (message, isError = false) => {
-    console.log('Message', message)
-    console.log('isError', isError)
     setNotification({ message, isError })
-    console.log('Notification', notification)
     setTimeout(() => {
       setNotification({ message: null })
     }, 5000);
   }
+
+  const blogFormRef = useRef()
 
   if (user === null) {
     return (
@@ -110,7 +110,9 @@ const App = () => {
       </p>
 
       <h2>create new</h2>
-      <BlogForm handleCreate={createBlog} />
+      <Togglable buttonLabel="create new blog" ref={blogFormRef}>
+        <BlogForm handleCreate={createBlog} />
+      </Togglable>
       {blogs.map(blog =>
         <Blog key={blog.id} blog={blog} />
       )}
