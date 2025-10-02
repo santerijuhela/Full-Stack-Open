@@ -60,6 +60,19 @@ const App = () => {
     showNotification(`a new blog ${returnedBlog.title} by ${returnedBlog.author} added`)
   }
 
+  const likeBlog = async id => {
+    const blog = blogs.find(b => b.id === id)
+    const changedBlog = { ...blog, user: blog.user.id, likes: blog.likes + 1}
+    try {
+      const returnedBlog = await blogService.update(id, changedBlog)
+      setBlogs(blogs.map(blog => blog.id === id ? returnedBlog : blog))
+      showNotification(`Added like to blog ${returnedBlog.title}`)
+    } catch {
+      showNotification('Blog not found', true)
+      setBlogs(blogs.filter(blog => blog.id !== id))
+    }
+  }
+
   const showNotification = (message, isError = false) => {
     setNotification({ message, isError })
     setTimeout(() => {
@@ -114,7 +127,7 @@ const App = () => {
         <BlogForm handleCreate={createBlog} />
       </Togglable>
       {blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} />
+        <Blog key={blog.id} blog={blog} addLike={() => likeBlog(blog.id)} />
       )}
     </div>
   )
