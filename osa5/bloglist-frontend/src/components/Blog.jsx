@@ -15,14 +15,14 @@ const Blog = ({ blog, addLike, user, remove }) => {
   const showForUser = {
     display:
       user.name === blog.user.name && user.username === blog.user.username
-      ? '' : 'none'
+        ? '' : 'none'
   }
 
   const toggleVisibility = () => {
     setAllVisible(!allVisible)
   }
 
-    return (
+  return (
     <div style={blogStyle}>
       <div>
         {blog.title} {blog.author}{' '}

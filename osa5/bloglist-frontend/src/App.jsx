@@ -16,7 +16,7 @@ const App = () => {
   useEffect(() => {
     blogService.getAll().then(blogs =>
       setBlogs( blogs )
-    )  
+    )
   }, [])
 
   useEffect(() => {
@@ -62,7 +62,7 @@ const App = () => {
 
   const likeBlog = async id => {
     const blog = blogs.find(b => b.id === id)
-    const changedBlog = { ...blog, user: blog.user.id, likes: blog.likes + 1}
+    const changedBlog = { ...blog, user: blog.user.id, likes: blog.likes + 1 }
     try {
       const returnedBlog = await blogService.update(id, changedBlog)
       setBlogs(blogs.map(blog => blog.id === id ? returnedBlog : blog))
@@ -90,7 +90,7 @@ const App = () => {
     setNotification({ message, isError })
     setTimeout(() => {
       setNotification({ message: null })
-    }, 5000);
+    }, 5000)
   }
 
   const blogFormRef = useRef()
@@ -149,7 +149,7 @@ const App = () => {
             addLike={() => likeBlog(blog.id)}
             remove={() => removeBlog(blog.id)}
           />
-      )}
+        )}
     </div>
   )
 }
