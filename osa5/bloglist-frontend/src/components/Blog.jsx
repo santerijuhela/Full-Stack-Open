@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const Blog = ({ blog, addLike }) => {
+const Blog = ({ blog, addLike, user, remove }) => {
   const [allVisible, setAllVisible] = useState(false)
 
   const blogStyle = {
@@ -11,7 +11,12 @@ const Blog = ({ blog, addLike }) => {
     marginBottom: 5
   }
 
-  const showWhenVisible = { display: allVisible ? '' : 'none'}
+  const showWhenVisible = { display: allVisible ? '' : 'none' }
+  const showForUser = {
+    display:
+      user.name === blog.user.name && user.username === blog.user.username
+      ? '' : 'none'
+  }
 
   const toggleVisibility = () => {
     setAllVisible(!allVisible)
@@ -30,6 +35,9 @@ const Blog = ({ blog, addLike }) => {
           <button onClick={addLike}>like</button>
         </div>
         <div>{blog.user.name}</div>
+        <div style={showForUser}>
+          <button onClick={remove}>remove</button>
+        </div>
       </div>
     </div>
   )

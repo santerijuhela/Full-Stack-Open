@@ -73,6 +73,19 @@ const App = () => {
     }
   }
 
+  const removeBlog = async id => {
+    const blogToRemove = blogs.find(blog => blog.id === id)
+    if (window.confirm(`Remove blog ${blogToRemove.title} by ${blogToRemove.author}`)) {
+      try {
+        await blogService.remove(id)
+        setBlogs(blogs.filter(blog => blog.id !== id))
+        showNotification(`Removed ${blogToRemove.title}`)
+      } catch {
+        showNotification(`Removing ${blogToRemove.title} failed`, true)
+      }
+    }
+  }
+
   const showNotification = (message, isError = false) => {
     setNotification({ message, isError })
     setTimeout(() => {
@@ -129,7 +142,13 @@ const App = () => {
       {blogs
         .sort((a, b) => -a.likes + b.likes)
         .map(blog =>
-          <Blog key={blog.id} blog={blog} addLike={() => likeBlog(blog.id)} />
+          <Blog
+            key={blog.id}
+            blog={blog}
+            user={user}
+            addLike={() => likeBlog(blog.id)}
+            remove={() => removeBlog(blog.id)}
+          />
       )}
     </div>
   )
