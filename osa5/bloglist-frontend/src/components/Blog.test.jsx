@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Blog from './Blog'
 
+let mockHandler
 describe('<Blog />', () => {
   beforeEach(() => {
     const blog = {
@@ -20,7 +21,9 @@ describe('<Blog />', () => {
       username: 'testUser'
     }
 
-    render(<Blog blog={blog} user={user} />)
+    mockHandler = vi.fn()
+
+    render(<Blog blog={blog} user={user} addLike={mockHandler} />)
   })
 
   test('at start displays title and author but not url or likes', () => {
@@ -47,5 +50,17 @@ describe('<Blog />', () => {
 
     const userElement = screen.getByText('Taru Tester')
     expect(userElement).toBeVisible()
+  })
+
+  test('clicking the like button twice calls event handler twice', async () => {
+    const testUser = userEvent.setup()
+    const viewButton = screen.getByText('view')
+    await testUser.click(viewButton)
+
+    const likeButton = screen.getByText('like')
+    await testUser.click(likeButton)
+    await testUser.click(likeButton)
+
+    expect(mockHandler.mock.calls).toHaveLength(2)
   })
 })
