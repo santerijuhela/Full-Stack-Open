@@ -37,5 +37,22 @@ describe('Blog app', () => {
       const notification = page.getByText('Wrong credentials')
       await expect(notification).toHaveCSS('color', 'rgb(255, 0, 0)')
     })
+
+    describe('When logged in', () => {
+      beforeEach(async ({ page }) => {
+        loginWith(page, 'mluukkai', 'salainen')
+      })
+
+      test('a new blog can be created', async ({ page }) => {
+        await page.getByRole('button', { name: 'create new blog' }).click()
+        await page.getByLabel('Title:').fill('Blog created by playwright')
+        await page.getByLabel('Author:').fill('Pauly Playwright')
+        await page.getByLabel('URL:').fill('https://playwright.blogtest.net')
+        await page.getByRole('button', { name: 'create' }).click()
+
+        await expect(page.getByText('a new blog Blog created by playwright by Pauly Playwright added')).toBeVisible()
+        await expect(page.getByText('Blog created by playwright Pauly Playwright')).toBeVisible()
+      })
+    })
   })
 })
