@@ -1,16 +1,10 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test')
-const { loginWith, createBlog } = require('./helper')
+const { loginWith, createBlog, addUser } = require('./helper')
 
 describe('Blog app', () => {
   beforeEach(async ({ page, request }) => {
     await request.post('/api/testing/reset')
-    await request.post('/api/users', {
-      data: {
-        name: 'Matti Luukkainen',
-        username: 'mluukkai',
-        password: 'salainen'
-      }
-    })
+    await addUser(request, 'Matti Luukkainen', 'mluukkai', 'salainen')
 
     await page.goto('/')
   })
@@ -72,6 +66,15 @@ describe('Blog app', () => {
           const notification = page.getByText('Removed Blog created by playwright')
           await expect(notification).toHaveCSS('color', 'rgb(0, 128, 0)')
           await expect(page.getByText('Blog created by playwright Pauly Playwright')).not.toBeVisible()
+        })
+
+        test('remove button is visible only to the user who added the blog', async({ page, request }) => {
+          await addUser(request, 'Taru Testaaja', 'tester', 'jotainvaan')
+          await page.getByRole('button', { name: 'logout' }).click()
+          await loginWith(page, 'tester', 'jotainvaan')
+          await page.getByRole('button', { name: 'view' }).click()
+
+          await expect(page.getByRole('button', { name: 'remove' })).not.toBeVisible()
         })
       })
     })
