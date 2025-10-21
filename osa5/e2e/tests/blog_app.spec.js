@@ -63,6 +63,16 @@ describe('Blog app', () => {
 
           await expect(page.getByText('likes 2')).toBeVisible()
         })
+
+        test('blog can be deleted by the user who added it', async ({ page }) => {
+          await page.getByRole('button', { name: 'view' }).click()
+          page.on('dialog', dialog => dialog.accept())
+          await page.getByRole('button', { name: 'remove' }).click()
+
+          const notification = page.getByText('Removed Blog created by playwright')
+          await expect(notification).toHaveCSS('color', 'rgb(0, 128, 0)')
+          await expect(page.getByText('Blog created by playwright Pauly Playwright')).not.toBeVisible()
+        })
       })
     })
   })
