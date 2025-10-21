@@ -10,9 +10,10 @@ const createBlog = async (page, title, author, url) => {
   await page.getByLabel('Author:').fill(author)
   await page.getByLabel('URL:').fill(url)
   await page.getByRole('button', { name: 'create' }).click()
+  await page.getByText(`${title} ${author}`).waitFor()
 }
 
-const addUser = async(request, name, username, password) => {
+const addUser = async (request, name, username, password) => {
   await request.post('/api/users', {
     data: {
       name,
