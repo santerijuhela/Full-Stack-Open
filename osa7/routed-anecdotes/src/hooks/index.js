@@ -11,10 +11,11 @@ const useField = (name) => {
     setValue('')
   }
 
+  const inputProps = { name, value, onChange }
+
   return {
-    name,
     value,
-    onChange,
+    inputProps,
     reset
   }
 }
