@@ -11,13 +11,10 @@ const useField = (name) => {
     setValue('')
   }
 
-  const inputProps = { name, value, onChange }
-
-  return {
+  return [{
+    name,
     value,
-    inputProps,
-    reset
-  }
+    onChange}, reset]
 }
 
 export default useField
