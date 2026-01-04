@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Blog from "./components/Blog";
 import blogService from "./services/blogs";
 import loginService from "./services/login";
@@ -7,18 +7,19 @@ import BlogForm from "./components/BlogForm";
 import Notification from "./components/Notification";
 import Togglable from "./components/Togglable";
 import { setNotificationWithTimeout } from "./reducers/notificationReducer";
+import { initializeBlogs, appendBlog } from "./reducers/blogReducer";
 
 const App = () => {
   const dispatch = useDispatch()
 
-  const [blogs, setBlogs] = useState([]);
+  //const [blogs, setBlogs] = useState([]);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    blogService.getAll().then((blogs) => setBlogs(blogs));
-  }, []);
+    dispatch(initializeBlogs())
+  }, [dispatch]);
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem("loggedBlogappUser");
@@ -28,6 +29,8 @@ const App = () => {
       blogService.setToken(user.token);
     }
   }, []);
+
+  const blogs = useSelector(state => state.blogs)
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -54,10 +57,9 @@ const App = () => {
 
   const createBlog = async (newBlog) => {
     blogFormRef.current.toggleVisibility();
-    const returnedBlog = await blogService.create(newBlog);
-    setBlogs(blogs.concat(returnedBlog));
+    dispatch(appendBlog(newBlog))
     showNotification(
-      `a new blog ${returnedBlog.title} by ${returnedBlog.author} added`,
+      `a new blog ${newBlog.title} by ${newBlog.author} added`,
     );
   };
 
@@ -142,8 +144,9 @@ const App = () => {
       <Togglable buttonLabel="create new blog" ref={blogFormRef}>
         <BlogForm handleCreate={createBlog} />
       </Togglable>
+      {console.log(blogs)}
       {blogs
-        .sort((a, b) => -a.likes + b.likes)
+        .toSorted((a, b) => b.likes - a.likes)
         .map((blog) => (
           <Blog
             key={blog.id}
