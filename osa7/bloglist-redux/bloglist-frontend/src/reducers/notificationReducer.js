@@ -11,16 +11,16 @@ const notificationSlice = createSlice({
       if (state.id === action.payload) {
         return null
       }
-    }
-  }
+    },
+  },
 })
 
 const { setNotification, clearNotification } = notificationSlice.actions
 
 let notificationId = 0
 
-export const setNotificationWithTimeout = (message, isError , seconds = 5) => {
-  return dispatch => {
+export const setNotificationWithTimeout = (message, isError, seconds = 5) => {
+  return (dispatch) => {
     const id = notificationId++
     dispatch(setNotification({ id, message, isError }))
     setTimeout(() => {

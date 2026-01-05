@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit'
 import blogService from '../services/blogs'
 
 const blogSlice = createSlice({
@@ -10,8 +10,8 @@ const blogSlice = createSlice({
     },
     setBlogs(state, action) {
       return action.payload
-    }
-  }
+    },
+  },
 })
 
 const { createBlog, setBlogs } = blogSlice.actions
@@ -23,7 +23,7 @@ export const initializeBlogs = () => {
   }
 }
 
-export const appendBlog = newBlog => {
+export const appendBlog = (newBlog) => {
   return async (dispatch) => {
     const blogToAdd = await blogService.create(newBlog)
     dispatch(createBlog(blogToAdd))

@@ -1,57 +1,57 @@
-const _ = require("lodash");
+const _ = require('lodash')
 
 const dummy = () => {
-  return 1;
-};
+  return 1
+}
 
 const totalLikes = (blogs) => {
-  return blogs.reduce((sum, curBlog) => sum + curBlog.likes, 0);
-};
+  return blogs.reduce((sum, curBlog) => sum + curBlog.likes, 0)
+}
 
 const favoriteBlog = (blogs) => {
   if (blogs.length === 0) {
-    return null;
+    return null
   }
 
   return blogs.reduce((mostLiked, blog) =>
-    blog.likes > mostLiked.likes ? blog : mostLiked,
-  );
-};
+    blog.likes > mostLiked.likes ? blog : mostLiked
+  )
+}
 
 const mostBlogs = (blogs) => {
   if (blogs.length === 0) {
-    return null;
+    return null
   }
 
-  const counted = _.countBy(blogs, "author");
+  const counted = _.countBy(blogs, 'author')
   const mostBloggedAuthor = _.maxBy(
     Object.keys(counted),
-    (author) => counted[author],
-  );
+    (author) => counted[author]
+  )
 
   return {
     author: mostBloggedAuthor,
     blogs: counted[mostBloggedAuthor],
-  };
-};
+  }
+}
 
 const mostLikes = (blogs) => {
   if (blogs.length === 0) {
-    return null;
+    return null
   }
 
   const likesByAuthor = blogs.reduce((result, blog) => {
-    result[blog.author] = (result[blog.author] || 0) + blog.likes;
-    return result;
-  }, {});
+    result[blog.author] = (result[blog.author] || 0) + blog.likes
+    return result
+  }, {})
   const mostLikedAuthor = _.maxBy(
     Object.keys(likesByAuthor),
-    (author) => likesByAuthor[author],
-  );
+    (author) => likesByAuthor[author]
+  )
   return {
     author: mostLikedAuthor,
     likes: likesByAuthor[mostLikedAuthor],
-  };
-};
+  }
+}
 
-module.exports = { dummy, totalLikes, favoriteBlog, mostBlogs, mostLikes };
+module.exports = { dummy, totalLikes, favoriteBlog, mostBlogs, mostLikes }

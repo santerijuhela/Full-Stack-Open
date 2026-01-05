@@ -1,30 +1,30 @@
-const bcrypt = require("bcrypt");
-const usersRouter = require("express").Router();
-const User = require("../models/user");
+const bcrypt = require('bcrypt')
+const usersRouter = require('express').Router()
+const User = require('../models/user')
 
-usersRouter.get("/", async (request, response) => {
-  const users = await User.find({}).populate("blogs", { user: 0, likes: 0 });
-  response.json(users);
-});
+usersRouter.get('/', async (request, response) => {
+  const users = await User.find({}).populate('blogs', { user: 0, likes: 0 })
+  response.json(users)
+})
 
-usersRouter.post("/", async (request, response) => {
-  const { username, name, password } = request.body;
+usersRouter.post('/', async (request, response) => {
+  const { username, name, password } = request.body
 
   if (!password || password.length < 3) {
-    return response.status(400).json({ error: "invalid password" });
+    return response.status(400).json({ error: 'invalid password' })
   }
 
-  const saltRounds = 10;
-  const passwordHash = await bcrypt.hash(password, saltRounds);
+  const saltRounds = 10
+  const passwordHash = await bcrypt.hash(password, saltRounds)
 
   const user = new User({
     username,
     name,
     passwordHash,
-  });
+  })
 
-  const savedUser = await user.save();
-  response.status(201).json(savedUser);
-});
+  const savedUser = await user.save()
+  response.status(201).json(savedUser)
+})
 
-module.exports = usersRouter;
+module.exports = usersRouter

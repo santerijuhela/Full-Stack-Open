@@ -1,34 +1,34 @@
-import { useState } from "react";
+import { useState } from 'react'
 
 const Blog = ({ blog, addLike, user, remove }) => {
-  const [allVisible, setAllVisible] = useState(false);
+  const [allVisible, setAllVisible] = useState(false)
 
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
-    border: "solid",
+    border: 'solid',
     borderWidth: 1,
     marginBottom: 5,
-  };
+  }
 
-  const showWhenVisible = { display: allVisible ? "" : "none" };
+  const showWhenVisible = { display: allVisible ? '' : 'none' }
   const showForUser = {
     display:
       user.name === blog.user.name && user.username === blog.user.username
-        ? ""
-        : "none",
-  };
+        ? ''
+        : 'none',
+  }
 
   const toggleVisibility = () => {
-    setAllVisible(!allVisible);
-  };
+    setAllVisible(!allVisible)
+  }
 
   return (
     <div style={blogStyle}>
       <div>
-        {blog.title} {blog.author}{" "}
+        {blog.title} {blog.author}{' '}
         <button onClick={toggleVisibility}>
-          {allVisible ? "hide" : "view"}
+          {allVisible ? 'hide' : 'view'}
         </button>
       </div>
       <div style={showWhenVisible}>
@@ -43,7 +43,7 @@ const Blog = ({ blog, addLike, user, remove }) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Blog;
+export default Blog
