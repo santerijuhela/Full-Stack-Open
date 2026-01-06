@@ -1,0 +1,21 @@
+import { useDispatch, useSelector } from 'react-redux'
+import { setNotificationWithTimeout } from '../reducers/notificationReducer'
+import { logoutUser } from '../reducers/userReducer'
+
+const UserHeader = () => {
+  const dispatch = useDispatch()
+  const user = useSelector((state) => state.user)
+
+  const handleLogout = () => {
+    dispatch(setNotificationWithTimeout(`${user.name} logged out`))
+    dispatch(logoutUser())
+  }
+
+  return (
+    <p>
+      {user.name} logged in <button onClick={handleLogout}>Logout</button>
+    </p>
+  )
+}
+
+export default UserHeader

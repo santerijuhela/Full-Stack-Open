@@ -59,4 +59,5 @@ export const deleteBlog = (blog) => {
   }
 }
 
+export { removeBlog }
 export default blogSlice.reducer
