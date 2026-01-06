@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Blog from './components/Blog'
-import blogService from './services/blogs'
-import loginService from './services/login'
 import BlogForm from './components/BlogForm'
 import Notification from './components/Notification'
 import Togglable from './components/Togglable'
 import { setNotificationWithTimeout } from './reducers/notificationReducer'
+import { initializeUser, loginUser, logoutUser } from './reducers/userReducer'
 import {
   initializeBlogs,
   appendBlog,
@@ -17,45 +16,35 @@ import {
 const App = () => {
   const dispatch = useDispatch()
   const blogs = useSelector((state) => state.blogs)
+  const user = useSelector((state) => state.user)
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [user, setUser] = useState(null)
 
   useEffect(() => {
     dispatch(initializeBlogs())
   }, [dispatch])
 
   useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
-    if (loggedUserJSON) {
-      const user = JSON.parse(loggedUserJSON)
-      setUser(user)
-      blogService.setToken(user.token)
-    }
-  }, [])
+    dispatch(initializeUser())
+  }, [dispatch])
 
   const handleLogin = async (event) => {
     event.preventDefault()
 
     try {
-      const user = await loginService.login({ username, password })
-
-      window.localStorage.setItem('loggedBlogappUser', JSON.stringify(user))
-      blogService.setToken(user.token)
-      setUser(user)
+      const user = await dispatch(loginUser({ username, password }))
       setUsername('')
       setPassword('')
+      showNotification(`${user.name} logged in`)
     } catch {
       showNotification('Wrong credentials', true)
     }
   }
 
-  const handleLogout = async () => {
-    window.localStorage.removeItem('loggedBlogappUser')
+  const handleLogout = () => {
     showNotification(`${user.name} logged out`)
-    blogService.setToken(null)
-    setUser(null)
+    dispatch(logoutUser())
   }
 
   const createBlog = async (newBlog) => {
