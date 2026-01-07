@@ -1,8 +1,14 @@
-const Notification = ({ notification }) => {
-  const { message, isError } = notification
-  if (!message) {
+import { useContext } from 'react'
+import NotificationContext from '../NotificationContext'
+
+const Notification = () => {
+  const { notification } = useContext(NotificationContext)
+
+  if (!notification) {
     return null
   }
+
+  const { message, isError } = notification
 
   const style = {
     color: isError ? 'red' : 'green',
