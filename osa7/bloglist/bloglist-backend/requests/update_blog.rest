@@ -1,9 +1,0 @@
-PUT http://localhost:3003/api/blogs/68a8671a07aa7e4f9ae3208f
-Content-Type: application/json
-
-{
-    "title": "Update test",
-    "author": "Ursula Updater",
-    "url": "http://www.updated.com",
-    "likes": 42
-}
