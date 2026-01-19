@@ -6,18 +6,32 @@ import BlogForm from './components/BlogForm'
 import Notification from './components/Notification'
 import Togglable from './components/Togglable'
 import { useNotify } from './NotificationContext'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 const App = () => {
-  const [blogs, setBlogs] = useState([])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
 
+  const queryClient = useQueryClient()
+
+  const result = useQuery({
+    queryKey: ['blogs'],
+    queryFn: blogService.getAll,
+  })
+
   const notify = useNotify()
 
-  useEffect(() => {
-    blogService.getAll().then((blogs) => setBlogs(blogs))
-  }, [])
+  const blogFormRef = useRef()
+
+  const newBlogMutation = useMutation({
+    mutationFn: blogService.create,
+    onSuccess: (newBlog) => {
+      const blogList = queryClient.getQueryData(['blogs'])
+      queryClient.setQueryData(['blogs'], blogList.concat(newBlog))
+      showNotification(`A new blog ${newBlog.title} by ${newBlog.author} added`)
+    },
+  })
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
@@ -27,6 +41,12 @@ const App = () => {
       blogService.setToken(user.token)
     }
   }, [])
+
+  if (result.isLoading) {
+    return <div>Loading data...</div>
+  }
+
+  const blogs = result.data
 
   const handleLogin = async (event) => {
     event.preventDefault()
@@ -53,11 +73,7 @@ const App = () => {
 
   const createBlog = async (newBlog) => {
     blogFormRef.current.toggleVisibility()
-    const returnedBlog = await blogService.create(newBlog)
-    setBlogs(blogs.concat(returnedBlog))
-    showNotification(
-      `a new blog ${returnedBlog.title} by ${returnedBlog.author} added`
-    )
+    newBlogMutation.mutate(newBlog)
   }
 
   const likeBlog = async (id) => {
@@ -93,8 +109,6 @@ const App = () => {
   const showNotification = (message, isError = false) => {
     notify({ message, isError })
   }
-
-  const blogFormRef = useRef()
 
   if (user === null) {
     return (
@@ -142,7 +156,7 @@ const App = () => {
         <BlogForm handleCreate={createBlog} />
       </Togglable>
       {blogs
-        .sort((a, b) => -a.likes + b.likes)
+        .toSorted((a, b) => b.likes - a.likes)
         .map((blog) => (
           <Blog
             key={blog.id}
