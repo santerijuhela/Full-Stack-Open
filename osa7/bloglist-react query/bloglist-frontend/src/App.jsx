@@ -33,6 +33,43 @@ const App = () => {
     },
   })
 
+  const likeMutation = useMutation({
+    mutationFn: ({ id, changedBlog }) => blogService.update(id, changedBlog),
+    onSuccess: (updatedBlog) => {
+      const blogList = queryClient.getQueryData(['blogs'])
+      queryClient.setQueryData(
+        ['blogs'],
+        blogList.map((blog) =>
+          blog.id === updatedBlog.id ? updatedBlog : blog
+        )
+      )
+      showNotification(`Liked blog ${updatedBlog.title}`)
+    },
+    onError: (error) => {
+      queryClient.invalidateQueries({ queryKey: ['blogs'] })
+      showNotification(error.response.data.error, true)
+    },
+  })
+
+  const removeMutation = useMutation({
+    mutationFn: ({ id }) => blogService.remove(id),
+    onSuccess: (data, blogToRemove) => {
+      const blogList = queryClient.getQueryData(['blogs'])
+      queryClient.setQueryData(
+        ['blogs'],
+        blogList.filter((blog) => blog.id !== blogToRemove.id)
+      )
+      showNotification(`Removed ${blogToRemove.title}`)
+    },
+    onError: (error, blogToRemove) => {
+      queryClient.invalidateQueries({ queryKey: ['blogs'] })
+      showNotification(
+        `Removing ${blogToRemove.title} failed: ${error.response.data.error}`,
+        true
+      )
+    },
+  })
+
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
     if (loggedUserJSON) {
@@ -79,14 +116,7 @@ const App = () => {
   const likeBlog = async (id) => {
     const blog = blogs.find((b) => b.id === id)
     const changedBlog = { ...blog, user: blog.user.id, likes: blog.likes + 1 }
-    try {
-      const returnedBlog = await blogService.update(id, changedBlog)
-      setBlogs(blogs.map((blog) => (blog.id === id ? returnedBlog : blog)))
-      showNotification(`Added like to blog ${returnedBlog.title}`)
-    } catch {
-      showNotification('Blog not found', true)
-      setBlogs(blogs.filter((blog) => blog.id !== id))
-    }
+    likeMutation.mutate({ id, changedBlog })
   }
 
   const removeBlog = async (id) => {
@@ -96,13 +126,7 @@ const App = () => {
         `Remove blog ${blogToRemove.title} by ${blogToRemove.author}`
       )
     ) {
-      try {
-        await blogService.remove(id)
-        setBlogs(blogs.filter((blog) => blog.id !== id))
-        showNotification(`Removed ${blogToRemove.title}`)
-      } catch {
-        showNotification(`Removing ${blogToRemove.title} failed`, true)
-      }
+      removeMutation.mutate(blogToRemove)
     }
   }
 
