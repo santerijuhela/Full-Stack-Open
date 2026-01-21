@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useContext } from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
@@ -7,11 +7,12 @@ import Notification from './components/Notification'
 import Togglable from './components/Togglable'
 import { useNotify } from './NotificationContext'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import UserContext from './UserContext'
 
 const App = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [user, setUser] = useState(null)
+  const { user, userDispatch } = useContext(UserContext)
 
   const queryClient = useQueryClient()
 
@@ -74,10 +75,10 @@ const App = () => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
-      setUser(user)
+      userDispatch({ type: 'SET', payload: user })
       blogService.setToken(user.token)
     }
-  }, [])
+  }, [userDispatch])
 
   if (result.isLoading) {
     return <div>Loading data...</div>
@@ -93,7 +94,7 @@ const App = () => {
 
       window.localStorage.setItem('loggedBlogappUser', JSON.stringify(user))
       blogService.setToken(user.token)
-      setUser(user)
+      userDispatch({ type: 'SET', payload: user })
       setUsername('')
       setPassword('')
     } catch {
@@ -105,7 +106,7 @@ const App = () => {
     window.localStorage.removeItem('loggedBlogappUser')
     showNotification(`${user.name} logged out`)
     blogService.setToken(null)
-    setUser(null)
+    userDispatch({ type: 'LOGOUT' })
   }
 
   const createBlog = async (newBlog) => {
