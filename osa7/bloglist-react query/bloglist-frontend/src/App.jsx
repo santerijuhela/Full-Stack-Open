@@ -1,17 +1,15 @@
-import { useState, useEffect, useRef, useContext } from 'react'
+import { useEffect, useRef, useContext } from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
-import loginService from './services/login'
 import BlogForm from './components/BlogForm'
 import Notification from './components/Notification'
 import Togglable from './components/Togglable'
 import { useNotify } from './NotificationContext'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import UserContext from './UserContext'
+import LoginForm from './components/LoginForm'
 
 const App = () => {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
   const { user, userDispatch } = useContext(UserContext)
 
   const queryClient = useQueryClient()
@@ -86,22 +84,6 @@ const App = () => {
 
   const blogs = result.data
 
-  const handleLogin = async (event) => {
-    event.preventDefault()
-
-    try {
-      const user = await loginService.login({ username, password })
-
-      window.localStorage.setItem('loggedBlogappUser', JSON.stringify(user))
-      blogService.setToken(user.token)
-      userDispatch({ type: 'SET', payload: user })
-      setUsername('')
-      setPassword('')
-    } catch {
-      showNotification('Wrong credentials', true)
-    }
-  }
-
   const handleLogout = async () => {
     window.localStorage.removeItem('loggedBlogappUser')
     showNotification(`${user.name} logged out`)
@@ -140,29 +122,7 @@ const App = () => {
       <div>
         <h2>Log in to application</h2>
         <Notification />
-        <form onSubmit={handleLogin}>
-          <div>
-            <label>
-              username
-              <input
-                type="text"
-                value={username}
-                onChange={({ target }) => setUsername(target.value)}
-              />
-            </label>
-          </div>
-          <div>
-            <label>
-              password
-              <input
-                type="password"
-                value={password}
-                onChange={({ target }) => setPassword(target.value)}
-              />
-            </label>
-          </div>
-          <button type="submit">login</button>
-        </form>
+        <LoginForm />
       </div>
     )
   }
