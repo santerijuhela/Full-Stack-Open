@@ -5,7 +5,7 @@ import { setNotificationWithTimeout } from '../reducers/notificationReducer'
 
 const Blog = ({ blog }) => {
   const dispatch = useDispatch()
-  const user = useSelector((state) => state.user)
+  const user = useSelector((state) => state.currentUser)
 
   const [allVisible, setAllVisible] = useState(false)
 
