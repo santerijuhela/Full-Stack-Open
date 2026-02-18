@@ -5,6 +5,8 @@ import UserContext from './UserContext'
 import LoginForm from './components/LoginForm'
 import BlogList from './components/BlogList'
 import UserHeader from './components/UserHeader'
+import { Routes, Route } from 'react-router'
+import UserList from './components/UserList'
 
 const App = () => {
   const { user, userDispatch } = useContext(UserContext)
@@ -33,7 +35,10 @@ const App = () => {
       <h2>blogs</h2>
       <Notification />
       <UserHeader />
-      <BlogList />
+      <Routes>
+        <Route path="/users" element={<UserList />} />
+        <Route path="/" element={<BlogList />} />
+      </Routes>
     </div>
   )
 }
