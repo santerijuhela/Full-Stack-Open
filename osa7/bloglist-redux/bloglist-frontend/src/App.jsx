@@ -6,13 +6,14 @@ import { initializeBlogs } from './reducers/blogReducer'
 import LoginForm from './components/LoginForm'
 import BlogList from './components/BlogList'
 import UserHeader from './components/UserHeader'
-import { Routes, Route } from 'react-router'
+import { Routes, Route, useMatch } from 'react-router'
 import { initializeUsers } from './reducers/userReducer'
 import UserList from './components/UserList'
+import BlogsForUser from './components/BlogsForUser'
 
 const App = () => {
   const dispatch = useDispatch()
-  const user = useSelector((state) => state.currentUser)
+  const loggedUser = useSelector((state) => state.currentUser)
 
   useEffect(() => {
     dispatch(initializeBlogs())
@@ -26,7 +27,13 @@ const App = () => {
     dispatch(initializeUsers())
   }, [dispatch])
 
-  if (user === null) {
+  const users = useSelector((state) => state.users)
+  const match = useMatch('/users/:id')
+  const selectedUser = match
+    ? users.find((user) => user.id === match.params.id)
+    : null
+
+  if (loggedUser === null) {
     return (
       <div>
         <h2>Log in to application</h2>
@@ -43,6 +50,10 @@ const App = () => {
       <UserHeader />
       <Routes>
         <Route path="/users" element={<UserList />} />
+        <Route
+          path="/users/:id"
+          element={<BlogsForUser user={selectedUser} />}
+        />
         <Route path="/" element={<BlogList />} />
       </Routes>
     </div>
