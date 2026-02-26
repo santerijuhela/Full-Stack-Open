@@ -10,6 +10,7 @@ import { Routes, Route, useMatch } from 'react-router'
 import { initializeUsers } from './reducers/userReducer'
 import UserList from './components/UserList'
 import BlogsForUser from './components/BlogsForUser'
+import Blog from './components/Blog'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -28,9 +29,16 @@ const App = () => {
   }, [dispatch])
 
   const users = useSelector((state) => state.users)
-  const match = useMatch('/users/:id')
-  const selectedUser = match
-    ? users.find((user) => user.id === match.params.id)
+  const blogs = useSelector((state) => state.blogs)
+
+  const userMatch = useMatch('/users/:id')
+  const selectedUser = userMatch
+    ? users.find((user) => user.id === userMatch.params.id)
+    : null
+
+  const blogMatch = useMatch('/blogs/:id')
+  const selectedBlog = blogMatch
+    ? blogs.find((blog) => blog.id === blogMatch.params.id)
     : null
 
   if (loggedUser === null) {
@@ -54,6 +62,7 @@ const App = () => {
           path="/users/:id"
           element={<BlogsForUser user={selectedUser} />}
         />
+        <Route path="/blogs/:id" element={<Blog blog={selectedBlog} />} />
         <Route path="/" element={<BlogList />} />
       </Routes>
     </div>

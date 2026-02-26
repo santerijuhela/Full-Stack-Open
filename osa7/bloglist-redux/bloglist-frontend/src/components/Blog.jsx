@@ -1,23 +1,17 @@
-import { useState } from 'react'
+// import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { addLike, deleteBlog, removeBlog } from '../reducers/blogReducer'
 import { setNotificationWithTimeout } from '../reducers/notificationReducer'
+import { Link, useNavigate } from 'react-router'
 
 const Blog = ({ blog }) => {
   const dispatch = useDispatch()
   const user = useSelector((state) => state.currentUser)
+  const navigate = useNavigate()
 
-  const [allVisible, setAllVisible] = useState(false)
+  //  const [allVisible, setAllVisible] = useState(false)
 
-  const blogStyle = {
-    paddingTop: 10,
-    paddingLeft: 2,
-    border: 'solid',
-    borderWidth: 1,
-    marginBottom: 5,
-  }
-
-  const showWhenVisible = { display: allVisible ? '' : 'none' }
+  //  const showWhenVisible = { display: allVisible ? '' : 'none' }
   const showForUser = {
     display:
       user.name === blog.user.name && user.username === blog.user.username
@@ -25,9 +19,11 @@ const Blog = ({ blog }) => {
         : 'none',
   }
 
+  /*
   const toggleVisibility = () => {
     setAllVisible(!allVisible)
   }
+    */
 
   const handleLike = async (blog) => {
     try {
@@ -44,6 +40,7 @@ const Blog = ({ blog }) => {
       try {
         dispatch(deleteBlog(blog))
         dispatch(setNotificationWithTimeout(`Removed ${blog.title}`))
+        navigate('/')
       } catch {
         dispatch(
           setNotificationWithTimeout(`Removing ${blog.title} failed`, true)
@@ -53,20 +50,25 @@ const Blog = ({ blog }) => {
   }
 
   return (
-    <div style={blogStyle}>
+    <div>
+      <h2>
+        {blog.title} {blog.author}
+      </h2>
+      {/*}
       <div>
         {blog.title} {blog.author}{' '}
         <button onClick={toggleVisibility}>
           {allVisible ? 'hide' : 'view'}
         </button>
       </div>
-      <div style={showWhenVisible}>
-        <div>{blog.url}</div>
+      */}
+      <div /*style={showWhenVisible}*/>
+        <Link to={blog.url}>{blog.url}</Link>
         <div>
-          likes {blog.likes}
+          {blog.likes} likes
           <button onClick={() => handleLike(blog)}>like</button>
         </div>
-        <div>{blog.user.name}</div>
+        <div>Added by {blog.user.name}</div>
         <div style={showForUser}>
           <button onClick={() => handleRemove(blog)}>remove</button>
         </div>

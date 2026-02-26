@@ -1,15 +1,23 @@
 import { useRef } from 'react'
 import BlogForm from './BlogForm'
 import Togglable from './Togglable'
-import Blog from './Blog'
 import { useDispatch, useSelector } from 'react-redux'
 import { appendBlog } from '../reducers/blogReducer'
 import { setNotificationWithTimeout } from '../reducers/notificationReducer'
+import { Link } from 'react-router'
 
 const BlogList = () => {
   const dispatch = useDispatch()
   const blogs = useSelector((state) => state.blogs)
   const blogFormRef = useRef()
+
+  const linkStyle = {
+    paddingTop: 10,
+    paddingLeft: 2,
+    border: 'solid',
+    borderWidth: 1,
+    marginBottom: 5,
+  }
 
   const createBlog = async (newBlog) => {
     blogFormRef.current.toggleVisibility()
@@ -30,7 +38,11 @@ const BlogList = () => {
       {blogs
         .toSorted((a, b) => b.likes - a.likes)
         .map((blog) => (
-          <Blog key={blog.id} blog={blog} />
+          <div key={blog.id} style={linkStyle}>
+            <Link to={`/blogs/${blog.id}`}>
+              {blog.title} {blog.author}
+            </Link>
+          </div>
         ))}
     </div>
   )
