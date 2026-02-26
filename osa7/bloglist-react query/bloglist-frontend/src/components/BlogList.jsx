@@ -4,7 +4,7 @@ import blogService from '../services/blogs'
 import { useNotify } from '../NotificationContext'
 import Togglable from './Togglable'
 import BlogForm from './BlogForm'
-import Blog from './Blog'
+import { Link } from 'react-router'
 
 const BlogList = () => {
   const queryClient = useQueryClient()
@@ -33,6 +33,14 @@ const BlogList = () => {
 
   const blogs = result.data
 
+  const linkStyle = {
+    paddingTop: 10,
+    paddingLeft: 2,
+    border: 'solid',
+    borderWidth: 1,
+    marginBottom: 5,
+  }
+
   const createBlog = (newBlog) => {
     blogFormRef.current.toggleVisibility()
     newBlogMutation.mutate(newBlog)
@@ -47,7 +55,11 @@ const BlogList = () => {
       {blogs
         .toSorted((a, b) => b.likes - a.likes)
         .map((blog) => (
-          <Blog key={blog.id} blog={blog} />
+          <div key={blog.id} style={linkStyle}>
+            <Link to={`/blogs/${blog.id}`}>
+              {blog.title} {blog.author}
+            </Link>
+          </div>
         ))}
     </div>
   )

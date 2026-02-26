@@ -10,19 +10,33 @@ import UserList from './components/UserList'
 import BlogsForUser from './components/BlogsForUser'
 import { useQuery } from '@tanstack/react-query'
 import userListService from './services/users'
+import Blog from './components/Blog'
 
 const App = () => {
   const { user, userDispatch } = useContext(UserContext)
-  const result = useQuery({
+  const userResult = useQuery({
     queryKey: ['users'],
     queryFn: userListService.getAll,
   })
 
-  const userList = result.data
-  const match = useMatch('/users/:id')
-  const selectedUser = match
-    ? userList.find((u) => u.id === match.params.id)
+  const blogResult = useQuery({
+    queryKey: ['blogs'],
+    queryFn: blogService.getAll,
+  })
+
+  const userList = userResult.data
+  const blogs = blogResult.data
+
+  const userMatch = useMatch('/users/:id')
+  const selectedUser = userMatch
+    ? userList.find((u) => u.id === userMatch.params.id)
     : null
+
+  const blogMatch = useMatch('/blogs/:id')
+  const selectedBlog =
+    blogMatch && blogs
+      ? blogs.find((blog) => blog.id === blogMatch.params.id)
+      : null
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
@@ -54,6 +68,7 @@ const App = () => {
           path="/users/:id"
           element={<BlogsForUser user={selectedUser} />}
         />
+        <Route path="/blogs/:id" element={<Blog blog={selectedBlog} />} />
         <Route path="/" element={<BlogList />} />
       </Routes>
     </div>

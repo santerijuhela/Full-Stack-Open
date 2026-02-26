@@ -1,15 +1,17 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useContext, useState } from 'react'
+import { useContext /*useState*/ } from 'react'
 import blogService from '../services/blogs'
 import { useNotify } from '../NotificationContext'
 import UserContext from '../UserContext'
+import { Link, useNavigate } from 'react-router'
 
 const Blog = ({ blog }) => {
-  const [allVisible, setAllVisible] = useState(false)
+  //  const [allVisible, setAllVisible] = useState(false)
 
   const { user } = useContext(UserContext)
   const queryClient = useQueryClient()
   const notify = useNotify()
+  const navigate = useNavigate()
 
   const likeMutation = useMutation({
     mutationFn: ({ id, blog }) => blogService.update(id, blog),
@@ -38,6 +40,7 @@ const Blog = ({ blog }) => {
         blogList.filter((blog) => blog.id !== blogToRemove.id)
       )
       notify({ message: `Removed ${blogToRemove.title}` })
+      navigate('/')
     },
     onError: (error, blogToRemove) => {
       queryClient.invalidateQueries({ queryKey: ['blogs'] })
@@ -48,15 +51,11 @@ const Blog = ({ blog }) => {
     },
   })
 
-  const blogStyle = {
-    paddingTop: 10,
-    paddingLeft: 2,
-    border: 'solid',
-    borderWidth: 1,
-    marginBottom: 5,
+  if (!blog) {
+    return <div>Loading blog...</div>
   }
 
-  const showWhenVisible = { display: allVisible ? '' : 'none' }
+  //  const showWhenVisible = { display: allVisible ? '' : 'none' }
   const showForUser = {
     display:
       user.name === blog.user.name && user.username === blog.user.username
@@ -64,9 +63,11 @@ const Blog = ({ blog }) => {
         : 'none',
   }
 
+  /*
   const toggleVisibility = () => {
     setAllVisible(!allVisible)
   }
+    */
 
   const likeBlog = (blog) => {
     const changedBlog = { ...blog, likes: blog.likes + 1 }
@@ -80,20 +81,25 @@ const Blog = ({ blog }) => {
   }
 
   return (
-    <div style={blogStyle}>
+    <div>
+      <h2>
+        {blog.title} {blog.author}
+      </h2>
+      {/*
       <div>
         {blog.title} {blog.author}{' '}
         <button onClick={toggleVisibility}>
           {allVisible ? 'hide' : 'view'}
         </button>
       </div>
-      <div style={showWhenVisible}>
-        <div>{blog.url}</div>
+      */}
+      <div /*style={showWhenVisible}*/>
+        <Link to={blog.url}>{blog.url}</Link>
         <div>
-          likes {blog.likes}
+          {blog.likes} likes
           <button onClick={() => likeBlog(blog)}>like</button>
         </div>
-        <div>{blog.user.name}</div>
+        <div>Added by {blog.user.name}</div>
         <div style={showForUser}>
           <button onClick={() => removeBlog(blog)}>remove</button>
         </div>
