@@ -5,12 +5,12 @@ import { initializeUser } from './reducers/loginReducer'
 import { initializeBlogs } from './reducers/blogReducer'
 import LoginForm from './components/LoginForm'
 import BlogList from './components/BlogList'
-import UserHeader from './components/UserHeader'
 import { Routes, Route, useMatch } from 'react-router'
 import { initializeUsers } from './reducers/userReducer'
 import UserList from './components/UserList'
 import BlogsForUser from './components/BlogsForUser'
 import Blog from './components/Blog'
+import NavMenu from './components/NavMenu'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -53,9 +53,9 @@ const App = () => {
 
   return (
     <div>
+      <NavMenu />
       <h2>blogs</h2>
       <Notification />
-      <UserHeader />
       <Routes>
         <Route path="/users" element={<UserList />} />
         <Route

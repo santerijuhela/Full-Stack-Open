@@ -4,13 +4,13 @@ import Notification from './components/Notification'
 import UserContext from './UserContext'
 import LoginForm from './components/LoginForm'
 import BlogList from './components/BlogList'
-import UserHeader from './components/UserHeader'
 import { Routes, Route, useMatch } from 'react-router'
 import UserList from './components/UserList'
 import BlogsForUser from './components/BlogsForUser'
 import { useQuery } from '@tanstack/react-query'
 import userListService from './services/users'
 import Blog from './components/Blog'
+import NavMenu from './components/NavMenu'
 
 const App = () => {
   const { user, userDispatch } = useContext(UserContext)
@@ -28,9 +28,10 @@ const App = () => {
   const blogs = blogResult.data
 
   const userMatch = useMatch('/users/:id')
-  const selectedUser = userMatch
-    ? userList.find((u) => u.id === userMatch.params.id)
-    : null
+  const selectedUser =
+    userMatch && userList
+      ? userList.find((u) => u.id === userMatch.params.id)
+      : null
 
   const blogMatch = useMatch('/blogs/:id')
   const selectedBlog =
@@ -59,9 +60,9 @@ const App = () => {
 
   return (
     <div>
+      <NavMenu />
       <h2>blogs</h2>
       <Notification />
-      <UserHeader />
       <Routes>
         <Route path="/users" element={<UserList />} />
         <Route

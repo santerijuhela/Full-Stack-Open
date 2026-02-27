@@ -11,6 +11,10 @@ const Blog = ({ blog }) => {
 
   //  const [allVisible, setAllVisible] = useState(false)
 
+  if (!blog) {
+    return null
+  }
+
   //  const showWhenVisible = { display: allVisible ? '' : 'none' }
   const showForUser = {
     display:
