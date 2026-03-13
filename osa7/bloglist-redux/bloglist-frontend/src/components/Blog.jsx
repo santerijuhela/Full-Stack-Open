@@ -77,6 +77,14 @@ const Blog = ({ blog }) => {
           <button onClick={() => handleRemove(blog)}>remove</button>
         </div>
       </div>
+      <h3>comments</h3>
+      <div>
+        <ul>
+          {blog.comments.map((c) => (
+            <li key={c.id}>{c.content}</li>
+          ))}
+        </ul>
+      </div>
     </div>
   )
 }
